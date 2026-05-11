@@ -297,12 +297,36 @@ function renderGuests() {
 function submitRSVP() {
   const name = document.getElementById('nameInput').value.trim();
   const sel = document.querySelector('input[name="rsvp"]:checked');
-  if(!name) { document.getElementById('nameInput').style.borderColor='#c13030'; document.getElementById('nameInput').focus(); return; }
-  if(!sel) { alert('Қатысу жауабын таңдаңыз'); return; }
-  saveGuest(name, sel.value);
-  document.getElementById('rsvpForm').style.display='none';
-  document.getElementById('successMsg').style.display='block';
-  renderGuests();
+  if (!name) {
+    document.getElementById('nameInput').style.borderColor = '#c13030';
+    document.getElementById('nameInput').focus();
+    return;
+  }
+  if (!sel) {
+    alert('Қатысу жауабын таңдаңыз');
+    return;
+  }
+
+  const status = sel.value;
+  const data = { name: name, status: status };
+
+  // Отправляем данные в Google Таблицу
+  fetch('https://script.google.com/macros/s/AKfycbwCBzwd2avT6eP5tcDMnkjH_kJLegzrTlBbpCTfNXauoEuN-0Y0RR_Tkf4ngbPN0GPsMg/exec', {
+    method: 'POST',
+    mode: 'no-cors', // отключаем CORS (для простоты)
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  }).then(() => {
+    // После отправки показываем сообщение об успехе
+    document.getElementById('rsvpForm').style.display = 'none';
+    document.getElementById('successMsg').style.display = 'block';
+    // также сохраняем локально (опционально)
+    saveGuest(name, status);
+    renderGuests();
+  }).catch(err => {
+    console.error('Ошибка отправки', err);
+    alert('Сәтсіздік. Қайталап көріңіз.');
+  });
 }
 
 // Scroll reveal
